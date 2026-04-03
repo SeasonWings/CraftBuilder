@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ConfigProvider, Layout, Button, theme, Space, Typography, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { 
-  DatabaseOutlined, 
   AppstoreOutlined, 
   SunOutlined, 
   MoonOutlined, 
@@ -61,73 +60,59 @@ const App: React.FC = () => {
         algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
           colorPrimary: '#4f46e5',
-          borderRadius: 12,
+          borderRadius: 20,
           fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
         },
       }}
     >
-      <Layout className="min-h-screen transition-colors duration-300">
-        <Header className="sticky top-0 z-40 w-full flex items-center justify-between px-4 sm:px-8 bg-background/80 backdrop-blur-md border-b leading-none h-16" style={{ background: isDarkMode ? '#141414' : '#fff' }}>
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('calculate')}>
-            <div className="p-2 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-              <DatabaseOutlined className="text-white text-lg" />
-            </div>
-            <div className="hidden sm:block">
-              <Title level={4} style={{ margin: 0, lineHeight: 1 }}>CraftBuilder</Title>
-              <Text type="secondary" style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600 }}>Production Tool</Text>
+      <Layout className="min-h-0 transition-colors duration-300 bg-transparent">
+        <Header style={{ margin: '8px 8px 0 8px' }} className="sticky top-0 z-40 flex items-center justify-between px-2 glass leading-none h-14 border-b-0 rounded-[20px]">
+          <div className="flex items-center gap-2 cursor-pointer px-2" onClick={() => setActiveTab('calculate')}>
+            <div>
+              <Title level={5} style={{ margin: 0, color: 'inherit' }}>CraftBuilder</Title>
             </div>
           </div>
 
-          <Space size="middle">
+          <Space size={8}>
             <Button
               type="text"
               shape="circle"
               icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
               onClick={() => setIsDarkMode(!isDarkMode)}
+              style={{ color: 'inherit' }}
             />
             
             <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-              <Button type="text" shape="circle" icon={<MoreOutlined style={{ fontSize: '20px' }} />} />
+              <Button type="text" shape="circle" icon={<MoreOutlined style={{ fontSize: '20px', color: 'inherit' }} />} />
             </Dropdown>
           </Space>
         </Header>
 
         {/* Removed Mobile Navigation Menu */}
 
-        <Content className="p-4 sm:p-8">
-          <div className="max-w-6xl mx-auto min-h-[calc(100vh-200px)]">
+        <Content className="p-2 overflow-y-visible">
+          <div className="max-w-full mx-auto">
             <AnimatePresence mode="wait">
               {activeTab === 'manage' ? (
                 <motion.div
                   key="manage"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-2"
                 >
-                  <div className="mb-10 text-center md:text-left">
-                    <Title level={1} style={{ marginBottom: '12px' }}>材料库管理</Title>
-                    <Text type="secondary" style={{ fontSize: '18px' }}>
-                      可视化管理基础材料及其多级合成配方，构建您的生产蓝图。
-                    </Text>
-                  </div>
                   <MaterialList />
                 </motion.div>
               ) : (
                 <motion.div
                   key="calculate"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-12"
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-2"
                 >
-                  <div className="text-center md:text-left">
-                    {/* <Title level={1} style={{ marginBottom: '12px' }}>生产清单计算</Title>
-                    <Text type="secondary" style={{ fontSize: '18px' }}>
-                      规划您的生产任务，实时汇总多层级材料需求。
-                    </Text> */}
-                  </div>
                   <BatchCalculator />
                 </motion.div>
               )}
@@ -135,15 +120,9 @@ const App: React.FC = () => {
           </div>
         </Content>
 
-        <Footer className="text-center py-12 border-t bg-muted/30 mt-20">
-          <Space direction="vertical" align="center">
-            <Space className="opacity-50">
-              <DatabaseOutlined />
-              <Text strong>CraftBuilder Pro</Text>
-            </Space>
-            <Text type="secondary" style={{ fontSize: '14px' }}>
-              © 2026 Crafted with precision for master builders.
-            </Text>
+        <Footer className="text-center py-2 border-t bg-muted/30 mt-2">
+          <Space direction="vertical" align="center" size={8}>
+            <Text type="secondary" style={{ fontSize: '10px' }}>CraftBuilder &copy; 2026</Text>
           </Space>
         </Footer>
       </Layout>

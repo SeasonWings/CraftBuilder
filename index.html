@@ -3,8 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>craftbuilder</title>
+    <meta name="viewport" id="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover" />
+    <title>CraftBuilder</title>
+    <script>
+      (function() {
+        function updateViewport() {
+          const targetWidth = 572;
+          const currentWidth = window.screen.width;
+          const scale = currentWidth / targetWidth;
+          const viewport = document.getElementById('viewport');
+          
+          if (currentWidth < 768) {
+            // Mobile: Scale to 572px fixed width
+            viewport.setAttribute('content', `width=${targetWidth},initial-scale=${scale},maximum-scale=${scale},user-scalable=no,viewport-fit=cover`);
+            // Set base rem for layout consistency (fixed 16px relative to 572px)
+            document.documentElement.style.fontSize = '16px';
+          } else {
+            // Desktop/Tablet: Use standard scale
+            viewport.setAttribute('content', 'width=device-width,initial-scale=1.0,viewport-fit=cover');
+            document.documentElement.style.fontSize = '16px';
+          }
+
+          // Set CSS variable for viewport height
+          const vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+        window.addEventListener('orientationchange', updateViewport);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
