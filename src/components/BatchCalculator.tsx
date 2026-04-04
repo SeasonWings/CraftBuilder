@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { 
@@ -8,7 +9,8 @@ import {
   Button, 
   Space, 
   Popconfirm,
-  Tabs
+  Tabs,
+  Grid
 } from 'antd';
 import { 
   ShoppingCartOutlined, 
@@ -29,14 +31,44 @@ import {
 import FlowDiagram from './FlowDiagram';
 
 const { Title, Text } = Typography;
-const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 const BatchCalculator: React.FC = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.sm;
   const materials = useSelector((state: RootState) => state.materials.materials);
   const [targets, setTargets] = useState<{ materialId: string; quantity: number }[]>([]);
 
   const targetOptions = useMemo(() => {
-    return materials.filter(m => m.level > 1);
+    const filterByLevel = (level: number) => materials.filter(m => m.level === level);
+    
+    const level2 = filterByLevel(2);
+    const level3 = filterByLevel(3);
+
+    const formatOption = (m: any) => ({
+      label: (
+        <span style={{ color: m.color || 'inherit', fontWeight: 500 }}>
+          {m.name}
+        </span>
+      ),
+      value: m.id,
+      name: m.name, // for searching
+    });
+
+    const groups = [];
+    if (level2.length > 0) {
+      groups.push({
+        label: <Text strong style={{ fontSize: '11px', opacity: 0.5 }}>二级 (中间产品)</Text>,
+        options: level2.map(formatOption),
+      });
+    }
+    if (level3.length > 0) {
+      groups.push({
+        label: <Text strong style={{ fontSize: '11px', opacity: 0.5 }}>三级 (最终产品)</Text>,
+        options: level3.map(formatOption),
+      });
+    }
+    return groups;
   }, [materials]);
 
   const handleAddTarget = () => {
@@ -90,14 +122,14 @@ const BatchCalculator: React.FC = () => {
   }, [validTargets, materials]);
 
   return (
-    <div style={{margin: '8px'}} className="p-2 flex flex-col gap-4">
-      <Card variant="borderless" className="glass border-none shadow-none overflow-hidden rounded-[20px]" styles={{ body: { padding: '0px' } }}>
-        <div style={{margin: '8px'}} className="p-2 border-b border-current/10">
+    <div style={{margin: isMobile ? '16px' : '8px'}} className={`${isMobile ? 'p-0' : 'p-1'} flex flex-col gap-4`}>
+      <Card variant="borderless" className={`glass border-none shadow-none overflow-hidden rounded-[20px]`} styles={{ body: { padding: '0px' } }}>
+        <div style={{margin: '8px'}} className={`p-2 border-b border-current/10`}>
           <Space size={8} className="text-primary px-2">
             <div className="p-2 bg-primary/20 rounded-[16px] flex items-center justify-center">
-              <ShoppingCartOutlined style={{ fontSize: '18px', color: '#4f46e5' }} />
+              <ShoppingCartOutlined style={{ fontSize: isMobile ? '16px' : '18px', color: '#4f46e5' }} />
             </div>
-            <Title level={5} style={{ margin: 0, color: 'inherit' }}>合并生产清单</Title>
+            <Title level={5} style={{ margin: 0, color: 'inherit', fontSize: isMobile ? '16px' : '18px' }}>合并生产清单</Title>
           </Space>
         </div>
 
@@ -105,11 +137,11 @@ const BatchCalculator: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <div style={{paddingBottom: '8px'}} className="flex justify-between items-center w-full px-2">
-                <Space size={8}>
+                <Space size={4}>
                   <CarryOutOutlined style={{ color: 'var(--text-sub)', opacity: 0.6 }} />
-                  <Text strong style={{ color: 'var(--text-sub)', fontSize: '13px' }}>待生产任务</Text>
+                  <Text strong style={{ color: 'var(--text-sub)', fontSize: isMobile ? '12px' : '13px' }}>待生产任务</Text>
                 </Space>
-                <div className="flex gap-1">
+                <div className="flex gap-2">
                   <Popconfirm
                     title="确定清空清单吗？"
                     onConfirm={handleClearTargets}
@@ -122,10 +154,10 @@ const BatchCalculator: React.FC = () => {
                       danger
                       size="small"
                       icon={<DeleteOutlined />}
-                      style={{marginRight: '8px'}}
-                      className="h-7 px-3 text-xs rounded-[12px] border-red-500/20"
+                      style={{ marginRight: '8px' }}
+                      className="h-7 px-2 text-[11px] rounded-[10px] border-red-500/20"
                     >
-                      清空
+                      {"清空"}
                     </Button>
                   </Popconfirm>
                   <Button
@@ -133,7 +165,7 @@ const BatchCalculator: React.FC = () => {
                     size="small"
                     onClick={handleAddTarget}
                     icon={<PlusOutlined />}
-                    className="h-7 px-3 text-xs rounded-[12px]"
+                    className="h-7 px-3 text-[11px] rounded-[10px]"
                   >
                     添加任务
                   </Button>
@@ -150,39 +182,38 @@ const BatchCalculator: React.FC = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                     >
-                      <Card variant="borderless" className="bg-black/5 dark:bg-white/5 border border-current/10 rounded-[20px]" styles={{ body: { padding: '4px 8px' } }}>
-                        <div className="flex items-center gap-2">
+                      <Card variant="borderless" className="bg-black/5 dark:bg-white/5 border border-current/10 rounded-[16px]" styles={{ body: { padding: isMobile ? '2px 4px' : '4px 8px' } }}>
+                        <div className="flex items-center gap-1">
                           <div className="flex-1 min-w-0">
                             <Select
                               showSearch
                               placeholder="选择物品"
                               variant="borderless"
-                              style={{ width: '100%', color: 'inherit' }}
+                              style={{ width: '100%', color: 'inherit', fontSize: isMobile ? '12px' : '14px' }}
                               value={target.materialId || undefined}
                               onChange={(val) => handleTargetChange(index, 'materialId', val)}
                               popupClassName="glass-popup"
-                            >
-                              {targetOptions.map(m => (
-                                <Option key={m.id} value={m.id}>{m.name}</Option>
-                              ))}
-                            </Select>
+                              options={targetOptions}
+                              optionFilterProp="name"
+                            />
                           </div>
-                          <div className="w-16">
+                          <div className={isMobile ? "w-12" : "w-16"}>
                             <InputNumber
                               min={1}
                               variant="borderless"
                               value={target.quantity}
                               onChange={(val) => handleTargetChange(index, 'quantity', val || 1)}
                               style={{ width: '100%' }}
-                              className="font-mono font-bold text-right text-sm"
+                              className="font-mono font-bold text-right text-xs sm:text-sm"
                             />
                           </div>
                           <Button
                             type="text"
                             danger
                             size="small"
-                            icon={<DeleteOutlined />}
+                            icon={<DeleteOutlined style={{ fontSize: isMobile ? '12px' : '14px' }} />}
                             onClick={() => handleRemoveTarget(index)}
+                            className="flex-shrink-0"
                           />
                         </div>
                       </Card>

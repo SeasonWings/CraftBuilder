@@ -7,8 +7,7 @@ import {
   Space, 
   Typography, 
   Popconfirm,
-  Popover
-} from 'antd';
+  Popover} from 'antd';
 import { 
   DeleteOutlined, 
   PlusOutlined, 
@@ -59,7 +58,7 @@ const MaterialList: React.FC = () => {
       { id: "1775202684976", name: "玄芝叶", level: 1, color: "#38bdf8", requirements: [] },
       { id: "1775202756319", name: "点翠晶石", level: 2, color: "#38bdf8", profession: "雕刻", requirements: [{ materialId: "1775196258034", quantity: 15 }, { materialId: "1775196303048", quantity: 1 }, { materialId: "1775196286012", quantity: 2 }] },
       { id: "1775202797740", name: "绯云晶石", level: 2, color: "#38bdf8", profession: "雕刻", requirements: [{ materialId: "1775202464208", quantity: 20 }, { materialId: "1775196303048", quantity: 1 }, { materialId: "1775196286012", quantity: 2 }] },
-      { id: "1775202840962", name: "点翠髓", level: 2, color: "#38bdf8", profession: "锻造", requirements: [{ materialId: "1775196258034", quantity: 15 }, { materialId: "1775196303048", quantity: 1 }, { materialId: "1775196303048", quantity: 2 }] },
+      { id: "1775202840962", name: "点翠髓", level: 2, color: "#38bdf8", profession: "锻造", requirements: [{ materialId: "1775196258034", quantity: 15 }, { materialId: "1775196310010", quantity: 1 }, { materialId: "1775196303048", quantity: 2 }] },
       { id: "1775202871975", name: "绯云髓", level: 2, color: "#38bdf8", profession: "锻造", requirements: [{ materialId: "1775202464208", quantity: 20 }, { materialId: "1775196303048", quantity: 1 }, { materialId: "1775196310010", quantity: 2 }] },
       { id: "1775202944788", name: "九穗革", level: 2, color: "#38bdf8", profession: "缝纫", requirements: [{ materialId: "1775202508210", quantity: 15 }, { materialId: "1775196310010", quantity: 2 }, { materialId: "1775196286012", quantity: 1 }] },
       { id: "1775202971886", name: "灯芯革", level: 2, color: "#38bdf8", profession: "缝纫", requirements: [{ materialId: "1775202537205", quantity: 20 }, { materialId: "1775196310010", quantity: 2 }, { materialId: "1775196286012", quantity: 1 }] },
@@ -159,7 +158,7 @@ const MaterialList: React.FC = () => {
       style={{margin: '8px'}} 
       className="flex flex-col gap-2"
     >
-      <div className="glass rounded-[20px] p-2 flex items-center justify-between">
+      <div className={`glass rounded-[20px] p-2 flex items-center justify-between`}>
         <div className="flex items-center gap-2 px-1">
           <div className="flex flex-col">
             <Text strong style={{ fontSize: '12px', color: 'var(--text-main)', lineHeight: 1.2 }}>材料库管理</Text>
@@ -207,7 +206,7 @@ const MaterialList: React.FC = () => {
               <Badge count={groupedMaterials[level as keyof typeof groupedMaterials].length} showZero color="#4f46e5" style={{ fontSize: '9px', height: '16px', minWidth: '16px', lineHeight: '16px' }} />
             </div>
 
-            <div className="grid grid-cols-5 gap-1 px-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 px-1">
               <AnimatePresence mode="popLayout">
                 {groupedMaterials[level as keyof typeof groupedMaterials].map((m) => (
                   <motion.div
@@ -281,8 +280,8 @@ const MaterialList: React.FC = () => {
               </AnimatePresence>
 
               {groupedMaterials[level as keyof typeof groupedMaterials].length === 0 && (
-                <div className="col-span-5 glass rounded-[12px] py-3 flex flex-col items-center justify-center border-dashed border border-current/10">
-                  <Text style={{ fontSize: '9px', color: 'var(--text-sub)', opacity: 0.4 }}>无数据</Text>
+                <div className="col-span-full glass rounded-[12px] py-4 flex flex-col items-center justify-center border-dashed border border-current/10">
+                  <Text style={{ fontSize: '10px', color: 'var(--text-sub)', opacity: 0.4 }}>无数据</Text>
                 </div>
               )}
             </div>

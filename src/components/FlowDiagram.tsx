@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { Typography, Button, Space, Tag } from 'antd';
+import { Typography, Button, Space, Tag, Grid } from 'antd';
 import { ZoomInOutlined, ZoomOutOutlined, RestOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import type { FlowEdge } from '../utils/calculation';
 import { motion, useMotionValue } from 'framer-motion';
 
 const { Text } = Typography;
+const { useBreakpoint } = Grid;
 
 interface FlowDiagramProps {
   edges: FlowEdge[];
@@ -23,6 +24,8 @@ const TASK_COLORS = [
 ];
 
 const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.sm;
   const [scale, setScale] = useState(1);
   const [hiddenTaskIds, setHiddenTaskIds] = useState<Set<number>>(new Set());
   
@@ -80,7 +83,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
   if (edges.length === 0) return null;
 
   return (
-    <div className="glass rounded-[20px] p-4 overflow-hidden relative" onWheel={handleWheel}>
+    <div className={`glass rounded-[20px] ${isMobile ? 'p-2' : 'p-4'} overflow-hidden relative`} onWheel={handleWheel}>
       <style>{`
         @keyframes dash {
           to {
@@ -95,7 +98,9 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
       <div className="mb-4 flex flex-col gap-3 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <Text style={{ fontSize: '10px', opacity: 0.5, marginLeft:'8px' }}>Alt+滚轮缩放 | 拖拽查看 | 点击图例屏蔽</Text>
+            <Text style={{ fontSize: '10px', opacity: 0.5, marginLeft: isMobile ? '4px' : '8px' }}>
+              {isMobile ? '双指/拖动查看' : 'Alt+滚轮缩放 | 拖拽查看'}
+            </Text>
           </div>
           
           <Space size={4}>
@@ -106,7 +111,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
         </div>
 
         {/* 任务图例 */}
-        <div className="flex flex-wrap gap-1.5 p-2 bg-black/5 dark:bg-white/5 rounded-[12px]">
+        <div className={`flex flex-wrap gap-1 ${isMobile ? 'p-1' : 'p-2'} bg-black/5 dark:bg-white/5 rounded-[12px]`}>
           {tasks.map((task, idx) => {
             const isHidden = hiddenTaskIds.has(idx);
             const color = TASK_COLORS[idx % TASK_COLORS.length];
@@ -115,12 +120,12 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
                 key={`legend-${idx}`}
                 icon={isHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 color={isHidden ? 'default' : color}
-                className={`cursor-pointer transition-all border-none ${isHidden ? 'opacity-40' : 'opacity-100 shadow-sm'}`}
+                className={`cursor-pointer transition-all border-none ${isHidden ? 'opacity-40' : 'opacity-100 shadow-sm'} m-0`}
                 onClick={() => toggleTaskVisibility(idx)}
                 style={{ 
                   borderRadius: '6px', 
-                  fontSize: '10px', 
-                  padding: '0 6px',
+                  fontSize: isMobile ? '9px' : '10px', 
+                  padding: '0 4px',
                   background: isHidden ? undefined : `${color}20`,
                   color: isHidden ? undefined : color,
                   fontWeight: 'bold'
@@ -136,7 +141,7 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
       <div 
         ref={containerRef}
         className="relative bg-black/5 dark:bg-white/5 rounded-[16px] cursor-move touch-none overflow-hidden" 
-        style={{ width: '100%', height: '400px' }}
+        style={{ width: '100%', height: isMobile ? '350px' : '400px' }}
       >
         <motion.div
           style={{ 
@@ -175,10 +180,58 @@ const FlowDiagram: React.FC<FlowDiagramProps> = ({ edges, tasks }) => {
               const startY = start.y + 20;
               const endX = end.x + 40;
               const endY = end.y + 20;
+
+              // 统计当前两点之间的连线数量，用于偏移
+              const sameEdgeCount = filteredEdges.slice(0, i).filter(e => 
+                (e.from === edge.from && e.to === edge.to) || (e.from === edge.to && e.to === edge.from)
+              ).length;
               
-              const cpX = (startX + endX) / 2 + (startY - endY) * 0.2;
-              const cpY = (startY + endY) / 2 + (endX - startX) * 0.2;
-              const pathD = `M ${startX} ${startY} Q ${cpX} ${cpY} ${endX} ${endY}`;
+              let pathD = "";
+              let cpX = 0;
+              let cpY = 0;
+
+              if (edge.from === edge.to) {
+                // 自环 (Self-loop) - 动态调整方向，使其出现在外侧
+                const loopRadius = 25 + sameEdgeCount * 12;
+                const isLeftSide = start.x < 50; // 锻造、炼药在左侧
+                const isRightSide = start.x > 120; // 缝纫、雕刻在右侧
+                
+                if (isLeftSide) {
+                  // 向左绕出
+                  const sX = startX - 18;
+                  const sY = startY - 10;
+                  const eX = startX - 18;
+                  const eY = startY + 10;
+                  // 稍微增加弧线弯曲度，使箭头角度更自然地指向节点
+                  pathD = `M ${sX} ${sY} A ${loopRadius} ${loopRadius} 0 1 0 ${eX} ${eY}`;
+                  cpX = startX - 55 - sameEdgeCount * 25;
+                  cpY = startY;
+                } else if (isRightSide) {
+                  // 向右绕出
+                  const sX = startX + 18;
+                  const sY = startY - 10;
+                  const eX = startX + 18;
+                  const eY = startY + 10;
+                  pathD = `M ${sX} ${sY} A ${loopRadius} ${loopRadius} 0 1 1 ${eX} ${eY}`;
+                  cpX = startX + 55 + sameEdgeCount * 25;
+                  cpY = startY;
+                } else {
+                  // 中间节点 (烹饪、最终目标) 向上绕出
+                  const sX = startX - 10;
+                  const sY = startY - 18;
+                  const eX = startX + 10;
+                  const eY = startY - 18;
+                  pathD = `M ${sX} ${sY} A ${loopRadius} ${loopRadius} 0 1 1 ${eX} ${eY}`;
+                  cpX = startX;
+                  cpY = startY - 60 - sameEdgeCount * 25;
+                }
+              } else {
+                // 普通连线
+                const offset = 0.2 + sameEdgeCount * 0.1;
+                cpX = (startX + endX) / 2 + (startY - endY) * offset;
+                cpY = (startY + endY) / 2 + (endX - startX) * offset;
+                pathD = `M ${startX} ${startY} Q ${cpX} ${cpY} ${endX} ${endY}`;
+              }
               
               return (
                 <motion.g 

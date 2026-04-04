@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   Modal, 
@@ -11,7 +11,8 @@ import {
   Space, 
   Typography,
   Tooltip,
-  ColorPicker
+  ColorPicker,
+  Grid
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -24,6 +25,7 @@ import { addMaterial, updateMaterial } from '../store/materialSlice';
 
 const { Text } = Typography;
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 const professions: Profession[] = ['缝纫', '锻造', '雕刻', '炼药', '烹饪'];
 
@@ -34,6 +36,8 @@ interface MaterialFormProps {
 }
 
 const MaterialForm: React.FC<MaterialFormProps> = ({ editMaterial, onClose, isOpen }) => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.sm;
   const dispatch = useDispatch();
   const allMaterials = useSelector((state: RootState) => state.materials.materials);
   const [form] = Form.useForm();
@@ -74,12 +78,42 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ editMaterial, onClose, isOp
 
   const currentLevel = Form.useWatch('level', form);
 
-  const availableIngredients = (level: number) => {
-    return allMaterials.filter(m => {
+  const availableIngredients = useMemo(() => {
+    if (!currentLevel) return [];
+    
+    const filterByLevel = (level: number) => allMaterials.filter(m => {
       if (editMaterial && m.id === editMaterial.id) return false;
-      return m.level < level;
+      return m.level === level;
     });
-  };
+
+    const formatOption = (m: any) => ({
+      label: (
+        <span style={{ color: m.color || 'inherit', fontWeight: 500 }}>
+          {m.name}
+        </span>
+      ),
+      value: m.id,
+      name: m.name, // for searching
+    });
+
+    const groups = [];
+    const levelLabels: Record<number, string> = {
+      1: '一级 (基础资源)',
+      2: '二级 (中间产品)',
+      3: '三级 (最终产品)',
+    };
+
+    for (let l = 1; l < currentLevel; l++) {
+      const levelMats = filterByLevel(l);
+      if (levelMats.length > 0) {
+        groups.push({
+          label: <Text strong style={{ fontSize: '11px', opacity: 0.5 }}>{levelLabels[l]}</Text>,
+          options: levelMats.map(formatOption),
+        });
+      }
+    }
+    return groups;
+  }, [allMaterials, currentLevel, editMaterial]);
 
   return (
     <Modal
@@ -94,16 +128,16 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ editMaterial, onClose, isOp
       open={isOpen}
       onCancel={onClose}
       onOk={() => form.submit()}
-      width={340}
+      width={isMobile ? '95%' : 340}
       centered
-      okText={editMaterial ? '更新材料' : '立即创建'}
+      okText={editMaterial ? '更新' : '创建'}
       cancelText="取消"
       destroyOnClose
       styles={{
         mask: { backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' },
-        body: { paddingTop: '8px' }
+        body: { paddingTop: '4px', paddingBottom: '4px' }
       }}
-      style={{ borderRadius: '20px', padding: '8px' }}
+      style={{ borderRadius: '20px', padding: isMobile ? '4px' : '8px', maxWidth: '340px' }}
     >
       <Form
         form={form}
@@ -144,8 +178,9 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ editMaterial, onClose, isOp
               getValueFromEvent={(color) => color.toHexString()}
             >
               <ColorPicker 
-                showText 
+                showText={!isMobile}
                 disabledAlpha 
+                size={isMobile ? "small" : "middle"}
                 presets={[
                   {
                     label: '常用颜色',
@@ -185,9 +220,9 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ editMaterial, onClose, isOp
             <Form.List name="requirements">
               {(fields, { add, remove }) => (
                 <>
-                  <div className="max-h-[160px] overflow-y-auto pr-1 flex flex-col gap-2">
+                  <div className={`${isMobile ? 'max-h-[140px]' : 'max-h-[160px]'} overflow-y-auto pr-1 flex flex-col gap-2`}>
                     {fields.map(({ key, name, ...restField }) => (
-                      <div key={key} className="flex gap-2 items-start">
+                      <div key={key} className="flex gap-1.5 items-start">
                         <div className="flex-1 min-w-0">
                           <Form.Item
                             {...restField}
@@ -195,30 +230,34 @@ const MaterialForm: React.FC<MaterialFormProps> = ({ editMaterial, onClose, isOp
                             rules={[{ required: true, message: '请选择原料' }]}
                             style={{ marginBottom: 0 }}
                           >
-                            <Select placeholder="原料" popupClassName="glass-popup requirement-select-popup" style={{ width: '100%' }} className="rounded-[12px]">
-                              {availableIngredients(currentLevel).map(m => (
-                                <Option key={m.id} value={m.id}>{m.name}</Option>
-                              ))}
-                            </Select>
+                            <Select 
+                              placeholder="原料" 
+                              showSearch
+                              optionFilterProp="name"
+                              popupClassName="glass-popup requirement-select-popup" 
+                              style={{ width: '100%', fontSize: isMobile ? '12px' : '14px' }} 
+                              className="rounded-[12px]"
+                              options={availableIngredients}
+                            />
                           </Form.Item>
                         </div>
-                        <div className="w-16">
+                        <div className={isMobile ? "w-14" : "w-16"}>
                           <Form.Item
                             {...restField}
                             name={[name, 'quantity']}
                             rules={[{ required: true, message: '数量' }]}
                             style={{ marginBottom: 0 }}
                           >
-                            <InputNumber min={1} placeholder="Qty" style={{ width: '100%' }} className="rounded-[12px]" />
+                            <InputNumber min={1} placeholder="Qty" style={{ width: '100%' }} className="rounded-[12px] text-xs sm:text-sm" />
                           </Form.Item>
                         </div>
                         <Button 
                           type="text" 
                           danger 
                           size="small"
-                          icon={<DeleteOutlined />} 
+                          icon={<DeleteOutlined style={{ fontSize: isMobile ? '12px' : '14px' }} />} 
                           onClick={() => remove(name)}
-                          className="mt-1"
+                          className="mt-1 p-0"
                         />
                       </div>
                     ))}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ConfigProvider, Layout, Button, theme, Space, Typography, Dropdown } from 'antd';
+import { ConfigProvider, Layout, Button, theme, Space, Typography, Dropdown, Grid } from 'antd';
 import type { MenuProps } from 'antd';
 import { 
   AppstoreOutlined, 
@@ -7,7 +7,8 @@ import {
   MoonOutlined, 
   GithubOutlined,
   MoreOutlined,
-  CalculatorOutlined
+  CalculatorOutlined,
+  MenuOutlined
 } from '@ant-design/icons';
 import MaterialList from './components/MaterialList';
 import BatchCalculator from './components/BatchCalculator';
@@ -15,8 +16,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 const App: React.FC = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
   const [activeTab, setActiveTab] = useState<'manage' | 'calculate'>('calculate');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -65,15 +69,13 @@ const App: React.FC = () => {
         },
       }}
     >
-      <Layout className="min-h-0 transition-colors duration-300 bg-transparent">
-        <Header style={{ margin: '8px 8px 0 8px' }} className="sticky top-0 z-40 flex items-center justify-between px-2 glass leading-none h-14 border-b-0 rounded-[20px]">
+      <Layout className="min-h-screen transition-colors duration-300 bg-transparent">
+        <Header style={{ margin: isMobile ? '16px 16px 0 16px' : '8px 8px 0 8px' }} className={`sticky top-0 z-40 flex items-center justify-between px-2 glass leading-none h-14 border-b-0 rounded-[20px]`}>
           <div className="flex items-center gap-2 cursor-pointer px-2" onClick={() => setActiveTab('calculate')}>
-            <div>
-              <Title level={5} style={{ margin: 0, color: 'inherit' }}>CraftBuilder</Title>
-            </div>
+            <Title level={isMobile ? 5 : 4} style={{ margin: 0, color: 'inherit' }}>CraftBuilder</Title>
           </div>
 
-          <Space size={8}>
+          <Space size={isMobile ? 4 : 8}>
             <Button
               type="text"
               shape="circle"
@@ -82,16 +84,14 @@ const App: React.FC = () => {
               style={{ color: 'inherit' }}
             />
             
-            <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-              <Button type="text" shape="circle" icon={<MoreOutlined style={{ fontSize: '20px', color: 'inherit' }} />} />
+            <Dropdown menu={{ items: menuItems }} placement="bottomRight" trigger={['click']}>
+              <Button type="text" shape="circle" icon={isMobile ? <MenuOutlined /> : <MoreOutlined style={{ fontSize: '20px', color: 'inherit' }} />} />
             </Dropdown>
           </Space>
         </Header>
 
-        {/* Removed Mobile Navigation Menu */}
-
-        <Content className="p-2 overflow-y-visible">
-          <div className="max-w-full mx-auto">
+        <Content className={isMobile ? "p-0" : "p-2"}>
+          <div className={isMobile ? "w-full" : "max-w-6xl mx-auto"}>
             <AnimatePresence mode="wait">
               {activeTab === 'manage' ? (
                 <motion.div

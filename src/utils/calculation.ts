@@ -253,8 +253,11 @@ export const calculateFlowDAG = (
     if (material.level > 1) {
       const producerProfession = material.profession;
       
-      if (producerProfession && userProfession && producerProfession !== userProfession) {
-        const transferType = material.isTradable === false ? '自行生产' : '交易';
+      if (producerProfession && userProfession) {
+        // 如果是相同职业，显示为“自行生产”，否则显示为“交易”或“自行生产”（取决于是否可交易）
+        const transferType = producerProfession === userProfession 
+          ? '自行生产' 
+          : (material.isTradable === false ? '自行生产' : '交易');
         
         edges.push({
           from: producerProfession,
