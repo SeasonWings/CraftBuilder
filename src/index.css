@@ -81,6 +81,13 @@
     background-image: 
       radial-gradient(at 0% 0%, rgba(30, 64, 175, 0.05) 0px, transparent 50%),
       radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+    /* Hide scrollbars but allow scrolling */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none;
   }
 
   .dark html, .dark body {
@@ -232,6 +239,16 @@
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global Scrollbar Hide */
+*::-webkit-scrollbar {
+  display: none !important;
+}
+
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Scroll performance */
